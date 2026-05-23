@@ -1,4 +1,4 @@
-package com.opporty.radar.features.users;
+package com.opporty.radar.features.auth.users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
