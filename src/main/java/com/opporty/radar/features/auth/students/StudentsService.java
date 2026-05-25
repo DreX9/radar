@@ -35,12 +35,10 @@ public class StudentsService {
         }
         Students existing = studentsRepository.findById(dto.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + dto.id()));
-
         if (existing.getUser() != null && !existing.getUser().getId().equals(dto.userId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se permite cambiar el usuario asociado.");
         }
 
-        existing.setCodigo(dto.codigo());
         existing.setNombres(dto.nombres());
         existing.setApellidos(dto.apellidos());
         existing.setCarrera(dto.carrera());

@@ -128,10 +128,6 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El correo electrónico ya está registrado");
         }
 
-        if (studentsRepository.existsByCodigo(request.codigo())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El código de estudiante ya está registrado");
-        }
-
         if (studentsRepository.existsByDni(request.dni())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DNI ya está registrado");
         }
@@ -152,7 +148,6 @@ public class AuthenticationService {
         usersRepository.save(user);
 
         var student = Students.builder()
-                .codigo(request.codigo())
                 .nombres(request.nombres())
                 .apellidos(request.apellidos())
                 .carrera(request.carrera())

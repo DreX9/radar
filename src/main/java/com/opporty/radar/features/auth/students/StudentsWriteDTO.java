@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 
 public record StudentsWriteDTO(
         Long id,
-        @NotBlank @Size(max = 50) String codigo,
         @NotBlank @Size(max = 100) String nombres,
         @NotBlank @Size(max = 100) String apellidos,
         @Size(max = 100) String carrera,

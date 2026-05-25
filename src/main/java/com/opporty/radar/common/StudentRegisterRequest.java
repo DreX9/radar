@@ -13,7 +13,6 @@ public record StudentRegisterRequest(
         @NotBlank @Size(min = 6) String password,
         @NotBlank @Pattern(regexp = "\\d{8}", message = "El DNI debe tener exactamente 8 dígitos") String dni,
         @NotNull LocalDate fechaNacimiento,
-        @NotBlank @Size(max = 50) String codigo,
         @NotBlank @Size(max = 100) String nombres,
         @NotBlank @Size(max = 100) String apellidos,
         @Size(max = 100) String carrera,
