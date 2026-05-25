@@ -16,7 +16,6 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
         if (entity == null) return null;
         return new StudentsViewDTO(
                 entity.getId(),
-                entity.getCodigo(),
                 entity.getNombres(),
                 entity.getApellidos(),
                 entity.getCarrera(),
@@ -32,7 +31,6 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
         if (dto == null) return null;
         return Students.builder()
                 .id(dto.id())
-                .codigo(dto.codigo())
                 .nombres(dto.nombres())
                 .apellidos(dto.apellidos())
                 .carrera(dto.carrera())
