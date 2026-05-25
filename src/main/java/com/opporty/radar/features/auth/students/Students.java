@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +38,12 @@ public class Students {
     private String carrera;
 
     private Integer ciclo;
+
+    @Column(nullable = false, length = 8)
+    private String dni;
+
+    @Column(name = "fecha_nacimiento", nullable = false)
+    private LocalDate fechaNacimiento;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)

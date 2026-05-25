@@ -13,8 +13,11 @@ import com.opporty.radar.common.AuthenticationRequest;
 import com.opporty.radar.common.AuthenticationResponse;
 import com.opporty.radar.common.RefreshTokenRequest;
 import com.opporty.radar.common.RegisterRequest;
+import com.opporty.radar.common.StudentRegisterRequest;
+import com.opporty.radar.features.auth.students.StudentsViewDTO;
 import com.opporty.radar.security.AuthenticationService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,6 +31,12 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
+    }
+
+    @PostMapping("/register/student")
+    public ResponseEntity<StudentsViewDTO> registerStudent(
+            @Valid @RequestBody StudentRegisterRequest request) {
+        return ResponseEntity.ok(authenticationService.registerStudent(request));
     }
 
     @PostMapping("/authenticate")

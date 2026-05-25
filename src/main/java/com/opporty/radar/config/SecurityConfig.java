@@ -44,11 +44,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (login, register, refresh)
-                        .requestMatchers("/auth/**", "/api/v1/auth/**").permitAll()
-                        // Solo ADMIN puede gestionar usuarios y roles
+                        // Endpoints públicos
+                        .requestMatchers(
+                                "/auth/authenticate", "/api/v1/auth/authenticate",
+                                "/auth/refresh-token", "/api/v1/auth/refresh-token",
+                                "/auth/register/student", "/api/v1/auth/register/student",
+                                "/error"
+                        ).permitAll()
+                        // Registro genérico requiere ADMIN
+                        .requestMatchers("/auth/register", "/api/v1/auth/register").hasRole("ADMIN")
+                        // Solo ADMIN puede gestionar usuarios, roles y profesores
                         .requestMatchers("/users/**", "/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/roles/**", "/api/v1/roles/**").hasRole("ADMIN")
+                        .requestMatchers("/teachers/**", "/api/v1/teachers/**").hasRole("ADMIN")
                         // El resto necesita autenticación
                         .anyRequest().authenticated()
                 )

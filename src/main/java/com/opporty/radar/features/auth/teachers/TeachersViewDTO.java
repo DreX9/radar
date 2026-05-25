@@ -1,5 +1,6 @@
 package com.opporty.radar.features.auth.teachers;
 
+import java.time.LocalDate;
 import com.opporty.radar.features.auth.users.UsersViewDTO;
 
 public record TeachersViewDTO(
@@ -9,5 +10,7 @@ public record TeachersViewDTO(
         String titulo,
         String especialidad,
         String telefono,
+        String dni,
+        LocalDate fechaNacimiento,
         UsersViewDTO user
 ) {}

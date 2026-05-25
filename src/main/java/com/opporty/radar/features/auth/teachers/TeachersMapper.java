@@ -21,6 +21,8 @@ public class TeachersMapper implements MapperInterface<Teachers, TeachersWriteDT
                 entity.getTitulo(),
                 entity.getEspecialidad(),
                 entity.getTelefono(),
+                entity.getDni(),
+                entity.getFechaNacimiento(),
                 usersMapper.toDt(entity.getUser())
         );
     }
@@ -35,6 +37,8 @@ public class TeachersMapper implements MapperInterface<Teachers, TeachersWriteDT
                 .titulo(dto.titulo())
                 .especialidad(dto.especialidad())
                 .telefono(dto.telefono())
+                .dni(dto.dni())
+                .fechaNacimiento(dto.fechaNacimiento())
                 .user(Users.builder().id(dto.userId()).build())
                 .build();
     }

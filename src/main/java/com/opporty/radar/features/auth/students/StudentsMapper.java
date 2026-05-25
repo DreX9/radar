@@ -21,6 +21,8 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
                 entity.getApellidos(),
                 entity.getCarrera(),
                 entity.getCiclo(),
+                entity.getDni(),
+                entity.getFechaNacimiento(),
                 usersMapper.toDt(entity.getUser())
         );
     }
@@ -35,6 +37,8 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
                 .apellidos(dto.apellidos())
                 .carrera(dto.carrera())
                 .ciclo(dto.ciclo())
+                .dni(dto.dni())
+                .fechaNacimiento(dto.fechaNacimiento())
                 .user(Users.builder().id(dto.userId()).build())
                 .build();
     }

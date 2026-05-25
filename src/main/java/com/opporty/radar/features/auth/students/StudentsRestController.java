@@ -33,38 +33,22 @@ public class StudentsRestController {
 
     @GetMapping("{id}")
     public ResponseEntity<StudentsViewDTO> getById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(studentsService.getStudentById(id));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data");
-        }
+        return ResponseEntity.ok(studentsService.getStudentById(id));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StudentsViewDTO> insertStudent(@Valid @RequestBody StudentsWriteDTO student) {
-        try {
-            return ResponseEntity.ok(studentsService.addStudent(student));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return ResponseEntity.ok(studentsService.addStudent(student));
     }
 
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StudentsViewDTO> updateStudent(@Valid @RequestBody StudentsWriteDTO student) {
-        try {
-            return ResponseEntity.ok(studentsService.updateStudent(student));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return ResponseEntity.ok(studentsService.updateStudent(student));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteById(@PathVariable long id) {
-        try {
-            studentsService.deleteStudentById(id);
-            return ResponseEntity.ok(String.format("Student deleted with id: %d", id));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        studentsService.deleteStudentById(id);
+        return ResponseEntity.ok(String.format("Student deleted with id: %d", id));
     }
 }

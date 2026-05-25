@@ -1,8 +1,9 @@
 package com.opporty.radar.features.auth.students;
 
 import java.util.List;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +18,9 @@ public class StudentsService {
     }
 
     public StudentsViewDTO getStudentById(Long id) {
-        return studentsMapper.toDt(studentsRepository.findById(id).orElseThrow());
+        return studentsRepository.findById(id)
+                .map(studentsMapper::toDt)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + id));
     }
 
     @Transactional
@@ -26,11 +29,26 @@ public class StudentsService {
     }
 
     @Transactional
-    public StudentsViewDTO updateStudent(StudentsWriteDTO student) {
-        if (student.id() == null || !studentsRepository.existsById(student.id())) {
-            throw new IllegalStateException("Id not found");
+    public StudentsViewDTO updateStudent(StudentsWriteDTO dto) {
+        if (dto.id() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID del estudiante es obligatorio para actualizar.");
         }
-        return save(student);
+        Students existing = studentsRepository.findById(dto.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + dto.id()));
+
+        if (existing.getUser() != null && !existing.getUser().getId().equals(dto.userId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se permite cambiar el usuario asociado.");
+        }
+
+        existing.setCodigo(dto.codigo());
+        existing.setNombres(dto.nombres());
+        existing.setApellidos(dto.apellidos());
+        existing.setCarrera(dto.carrera());
+        existing.setCiclo(dto.ciclo());
+        existing.setDni(dto.dni());
+        existing.setFechaNacimiento(dto.fechaNacimiento());
+
+        return studentsMapper.toDt(studentsRepository.save(existing));
     }
 
     private StudentsViewDTO save(StudentsWriteDTO student) {
@@ -39,10 +57,9 @@ public class StudentsService {
 
     @Transactional
     public void deleteStudentById(Long id) {
-        try {
-            studentsRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new IllegalStateException("Id not found: " + id, e);
+        if (!studentsRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + id);
         }
+        studentsRepository.deleteById(id);
     }
 }
