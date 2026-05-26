@@ -5,10 +5,15 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -17,6 +22,10 @@ import lombok.RequiredArgsConstructor;
 public class UsersRestController {
     private final UsersService usersService;
 
+    public record UpdateStatusRequest(
+            @NotBlank(message = "El estado no puede estar vacío") String status
+    ) {}
+
     @GetMapping
     public ResponseEntity<List<UsersViewDTO>> list() throws ResponseStatusException {
         List<UsersViewDTO> list = usersService.getAllUsers();
@@ -24,5 +33,23 @@ public class UsersRestController {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No data");
         }
         return ResponseEntity.ok(list);
+    }
+
+    public record UpdateRoleRequest(
+            @NotBlank(message = "El rol no puede estar vacío") String role
+    ) {}
+
+    @PutMapping("{id}/status")
+    public ResponseEntity<UsersViewDTO> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(usersService.updateUserStatus(id, request.status()));
+    }
+
+    @PutMapping("{id}/role")
+    public ResponseEntity<UsersViewDTO> updateRole(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateRoleRequest request) {
+        return ResponseEntity.ok(usersService.updateUserRole(id, request.role()));
     }
 }
