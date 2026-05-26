@@ -83,6 +83,20 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<Map<String, Object>> handleDisabledException(
+            org.springframework.security.authentication.DisabledException ex, HttpServletRequest request) {
+        
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", 403);
+        body.put("error", "Forbidden");
+        body.put("message", "El usuario está inactivo. El acceso al sistema ha sido bloqueado.");
+        body.put("path", request.getRequestURI());
+        
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAllExceptions(
             Exception ex, HttpServletRequest request) {

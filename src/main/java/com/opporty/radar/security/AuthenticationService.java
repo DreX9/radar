@@ -208,7 +208,7 @@ public class AuthenticationService {
                 .username(username)
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .enabled(true)
+                .enabled("ACTIVE".equalsIgnoreCase(request.status()))
                 .role(role)
                 .build();
         usersRepository.save(user);
