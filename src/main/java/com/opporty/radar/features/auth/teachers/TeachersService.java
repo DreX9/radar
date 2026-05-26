@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 public class TeachersService {
     private final TeachersRepository teachersRepository;
     private final TeachersMapper teachersMapper;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
 
     public List<TeachersViewDTO> getAllTeachers() {
         return teachersRepository.findAll().stream().map(teachersMapper::toDt).toList();
@@ -22,6 +24,13 @@ public class TeachersService {
                 .map(teachersMapper::toDt)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesor no encontrado con ID: " + id));
     }
+
+    public TeachersViewDTO getTeacherByUsername(String username) {
+        return teachersRepository.findByUserUsername(username)
+                .map(teachersMapper::toDt)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesor no encontrado para el usuario: " + username));
+    }
+
 
     @Transactional
     public TeachersViewDTO addTeacher(TeachersWriteDTO teacher) {
@@ -47,9 +56,17 @@ public class TeachersService {
         existing.setTelefono(dto.telefono());
         existing.setDni(dto.dni());
         existing.setFechaNacimiento(dto.fechaNacimiento());
+        existing.setBiography(dto.biography());
+        existing.setStatus(dto.status());
+        existing.setHiringDate(dto.hiringDate());
+
+        if (dto.password() != null && !dto.password().trim().isEmpty()) {
+            existing.getUser().setPassword(passwordEncoder.encode(dto.password().trim()));
+        }
 
         return teachersMapper.toDt(teachersRepository.save(existing));
     }
+
 
     private TeachersViewDTO save(TeachersWriteDTO teacher) {
         return teachersMapper.toDt(teachersRepository.save(teachersMapper.toEntity(teacher)));

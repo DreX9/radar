@@ -43,15 +43,23 @@ public class RadarApplication {
 										.description("Administrador del sistema")
 										.build()));
 
-				// 2. Crear rol USER si no existe
-				rolesRepository.findByName("USER")
+				// Intentar migrar/renombrar rol USER a MANAGER si existe
+				rolesRepository.findByName("USER").ifPresent(userRole -> {
+					userRole.setName("MANAGER");
+					userRole.setDescription("Manager de Eventos");
+					rolesRepository.save(userRole);
+				});
+
+				// 2. Crear rol MANAGER si no existe
+				rolesRepository.findByName("MANAGER")
 						.orElseGet(() -> rolesRepository.save(
 								Roles.builder()
-										.name("USER")
-										.description("Usuario estándar")
+										.name("MANAGER")
+										.description("Manager de Eventos")
 										.build()));
 
 				// 3. Crear rol STUDENT si no existe
+
 				rolesRepository.findByName("STUDENT")
 						.orElseGet(() -> rolesRepository.save(
 								Roles.builder()
@@ -86,6 +94,9 @@ public class RadarApplication {
 							.telefono("999999999")
 							.dni("00000000")
 							.fechaNacimiento(java.time.LocalDate.of(1990, 1, 1))
+							.biography("Administrador principal del sistema Echo.")
+							.status("ACTIVE")
+							.hiringDate(java.time.LocalDate.of(2020, 1, 1))
 							.user(adminUser)
 							.build();
 					teachersRepository.save(adminTeacher);

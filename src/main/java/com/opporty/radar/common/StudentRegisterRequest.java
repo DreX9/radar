@@ -16,6 +16,8 @@ public record StudentRegisterRequest(
         @NotBlank @Size(max = 100) String nombres,
         @NotBlank @Size(max = 100) String apellidos,
         @Size(max = 100) String carrera,
-        @Min(1) Integer ciclo
+        @Min(1) Integer ciclo,
+        @Pattern(regexp = "\\d{9}", message = "El número de teléfono debe tener exactamente 9 dígitos") String phoneNumber
 ) {
 }
+

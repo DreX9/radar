@@ -11,5 +11,8 @@ public record StudentsViewDTO(
         Integer ciclo,
         String dni,
         LocalDate fechaNacimiento,
+        String phoneNumber,
+        String status,
         UsersViewDTO user
 ) {}
+

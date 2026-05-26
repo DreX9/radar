@@ -71,7 +71,7 @@ public class AuthenticationService {
         var userDetails = new CustomUserDetail(user);
 
         // 4. Generar tokens
-        var token = jwtService.generateToken(userDetails);
+        var token = generateTokenWithClaims(userDetails);
         var refresh = jwtService.generateRefreshToken(userDetails);
 
         return new AuthenticationResponse(token, refresh);
@@ -94,7 +94,7 @@ public class AuthenticationService {
         var userDetails = new CustomUserDetail(user);
 
         // 3. Generar tokens
-        var token = jwtService.generateToken(userDetails);
+        var token = generateTokenWithClaims(userDetails);
         var refresh = jwtService.generateRefreshToken(userDetails);
 
         return new AuthenticationResponse(token, refresh);
@@ -111,7 +111,7 @@ public class AuthenticationService {
 
         if (jwtService.isTokenValid(request.refreshToken(), userDetails)) {
 
-            var newAccessToken = jwtService.generateToken(userDetails);
+            var newAccessToken = generateTokenWithClaims(userDetails);
 
             return new AuthenticationResponse(
                     newAccessToken,
@@ -121,6 +121,31 @@ public class AuthenticationService {
 
         throw new RuntimeException("Token de refresco inválido");
     }
+
+    private String generateTokenWithClaims(CustomUserDetail userDetails) {
+        var user = userDetails.getUser();
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+
+        // Buscar en estudiantes
+        var studentOpt = studentsRepository.findByUser(user);
+        if (studentOpt.isPresent()) {
+            claims.put("firstName", studentOpt.get().getNombres());
+            claims.put("lastName", studentOpt.get().getApellidos());
+        } else {
+            // Buscar en profesores
+            var teacherOpt = teachersRepository.findByUser(user);
+            if (teacherOpt.isPresent()) {
+                claims.put("firstName", teacherOpt.get().getNombres());
+                claims.put("lastName", teacherOpt.get().getApellidos());
+            } else {
+                // Fallback por defecto (ej: admin)
+                claims.put("firstName", "Admin");
+                claims.put("lastName", "");
+            }
+        }
+        return jwtService.generateToken(claims, userDetails);
+    }
+
 
     @Transactional
     public StudentsViewDTO registerStudent(StudentRegisterRequest request) {
@@ -154,6 +179,8 @@ public class AuthenticationService {
                 .ciclo(request.ciclo())
                 .dni(request.dni())
                 .fechaNacimiento(request.fechaNacimiento())
+                .phoneNumber(request.phoneNumber())
+                .status("ACTIVE")
                 .user(user)
                 .build();
         studentsRepository.save(student);
@@ -172,7 +199,7 @@ public class AuthenticationService {
         }
 
         // Auto-generación del nombre de usuario
-        String username = generateUniqueUsername("mr", request.dni(), request.fechaNacimiento());
+        String username = generateUniqueUsername("mr", request.dni(), request.birthDate());
 
         var role = rolesRepository.findById(request.roleId())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con ID: " + request.roleId()));
@@ -187,13 +214,16 @@ public class AuthenticationService {
         usersRepository.save(user);
 
         var teacher = Teachers.builder()
-                .nombres(request.nombres())
-                .apellidos(request.apellidos())
-                .titulo(request.titulo())
-                .especialidad(request.especialidad())
-                .telefono(request.telefono())
+                .nombres(request.firstName())
+                .apellidos(request.lastName())
+                .titulo(request.title())
+                .especialidad(request.specialty())
+                .telefono(request.phoneNumber())
                 .dni(request.dni())
-                .fechaNacimiento(request.fechaNacimiento())
+                .fechaNacimiento(request.birthDate())
+                .biography(request.biography())
+                .status(request.status())
+                .hiringDate(request.hiringDate())
                 .user(user)
                 .build();
         teachersRepository.save(teacher);

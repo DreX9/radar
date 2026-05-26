@@ -38,8 +38,17 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtConfig.getTokenExpirationInMillis());
+        Map<String, Object> claims = new java.util.HashMap<>(extraClaims);
+        if (!claims.containsKey("authorities")) {
+            claims.put("authorities", userDetails.getAuthorities()
+                    .stream()
+                    .map(a -> a.getAuthority())
+                    .toList()
+            );
+        }
+        return buildToken(claims, userDetails, jwtConfig.getTokenExpirationInMillis());
     }
+
 
     public String generateRefreshToken(UserDetails userDetails) {
         return buildToken(new HashMap<>(), userDetails, jwtConfig.getRefreshTokenExpirationInMillis());

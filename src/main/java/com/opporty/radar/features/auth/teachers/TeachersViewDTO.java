@@ -12,5 +12,9 @@ public record TeachersViewDTO(
         String telefono,
         String dni,
         LocalDate fechaNacimiento,
+        String biography,
+        String status,
+        LocalDate hiringDate,
         UsersViewDTO user
 ) {}
+
