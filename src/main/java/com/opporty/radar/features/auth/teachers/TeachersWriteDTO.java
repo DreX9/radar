@@ -12,8 +12,14 @@ public record TeachersWriteDTO(
         @NotBlank @Size(max = 100) String apellidos,
         @Size(max = 150) String titulo,
         @Size(max = 150) String especialidad,
-        @Size(max = 20) String telefono,
+        @Pattern(regexp = "\\d{9}", message = "El número de teléfono debe tener exactamente 9 dígitos") String telefono,
         @NotBlank @Pattern(regexp = "\\d{8}") String dni,
         @NotNull LocalDate fechaNacimiento,
-        @NotNull Long userId
+        String biography,
+        @NotBlank String status,
+        LocalDate hiringDate,
+        @NotNull Long userId,
+        String password
 ) {}
+
+

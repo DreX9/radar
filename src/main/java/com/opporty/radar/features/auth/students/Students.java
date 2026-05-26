@@ -42,6 +42,12 @@ public class Students {
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
+    @Column(name = "phone_number", length = 9)
+    private String phoneNumber;
+
+    @Column(nullable = false, length = 20)
+    private String status;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private Users user;

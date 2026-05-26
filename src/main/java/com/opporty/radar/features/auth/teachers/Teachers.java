@@ -37,7 +37,7 @@ public class Teachers {
     @Column(length = 150)
     private String especialidad;
 
-    @Column(length = 20)
+    @Column(length = 9)
     private String telefono;
 
     @Column(nullable = false, length = 8)
@@ -45,6 +45,15 @@ public class Teachers {
 
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
+
+    @Column(columnDefinition = "TEXT")
+    private String biography;
+
+    @Column(nullable = false, length = 20)
+    private String status;
+
+    @Column(name = "hiring_date")
+    private LocalDate hiringDate;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)

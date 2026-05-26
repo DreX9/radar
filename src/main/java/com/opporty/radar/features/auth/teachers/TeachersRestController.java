@@ -46,6 +46,13 @@ public class TeachersRestController {
         return ResponseEntity.ok(teachersService.getTeacherById(id));
     }
 
+    @GetMapping("me")
+    public ResponseEntity<TeachersViewDTO> getMe(java.security.Principal principal) {
+        String username = principal.getName();
+        return ResponseEntity.ok(teachersService.getTeacherByUsername(username));
+    }
+
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TeachersViewDTO> insertTeacher(@Valid @RequestBody TeachersWriteDTO teacher) {
         return ResponseEntity.ok(teachersService.addTeacher(teacher));

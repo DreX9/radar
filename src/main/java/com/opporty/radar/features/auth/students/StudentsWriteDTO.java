@@ -15,5 +15,10 @@ public record StudentsWriteDTO(
         @Min(1) Integer ciclo,
         @NotBlank @Pattern(regexp = "\\d{8}") String dni,
         @NotNull LocalDate fechaNacimiento,
-        @NotNull Long userId
+        @Pattern(regexp = "\\d{9}", message = "El número de teléfono debe tener exactamente 9 dígitos") String phoneNumber,
+        @NotBlank String status,
+        @NotNull Long userId,
+        String password
 ) {}
+
+

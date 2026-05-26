@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 public class StudentsService {
     private final StudentsRepository studentsRepository;
     private final StudentsMapper studentsMapper;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
 
     public List<StudentsViewDTO> getAllStudents() {
         return studentsRepository.findAll().stream().map(studentsMapper::toDt).toList();
@@ -22,6 +24,13 @@ public class StudentsService {
                 .map(studentsMapper::toDt)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado con ID: " + id));
     }
+
+    public StudentsViewDTO getStudentByUsername(String username) {
+        return studentsRepository.findByUserUsername(username)
+                .map(studentsMapper::toDt)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante no encontrado para el usuario: " + username));
+    }
+
 
     @Transactional
     public StudentsViewDTO addStudent(StudentsWriteDTO student) {
@@ -45,9 +54,16 @@ public class StudentsService {
         existing.setCiclo(dto.ciclo());
         existing.setDni(dto.dni());
         existing.setFechaNacimiento(dto.fechaNacimiento());
+        existing.setPhoneNumber(dto.phoneNumber());
+        existing.setStatus(dto.status());
+
+        if (dto.password() != null && !dto.password().trim().isEmpty()) {
+            existing.getUser().setPassword(passwordEncoder.encode(dto.password().trim()));
+        }
 
         return studentsMapper.toDt(studentsRepository.save(existing));
     }
+
 
     private StudentsViewDTO save(StudentsWriteDTO student) {
         return studentsMapper.toDt(studentsRepository.save(studentsMapper.toEntity(student)));

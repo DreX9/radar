@@ -22,6 +22,8 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
                 entity.getCiclo(),
                 entity.getDni(),
                 entity.getFechaNacimiento(),
+                entity.getPhoneNumber(),
+                entity.getStatus(),
                 usersMapper.toDt(entity.getUser())
         );
     }
@@ -37,7 +39,10 @@ public class StudentsMapper implements MapperInterface<Students, StudentsWriteDT
                 .ciclo(dto.ciclo())
                 .dni(dto.dni())
                 .fechaNacimiento(dto.fechaNacimiento())
+                .phoneNumber(dto.phoneNumber())
+                .status(dto.status())
                 .user(Users.builder().id(dto.userId()).build())
                 .build();
     }
 }
+

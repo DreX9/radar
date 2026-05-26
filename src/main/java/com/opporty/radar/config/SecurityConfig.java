@@ -53,12 +53,19 @@ public class SecurityConfig {
                         ).permitAll()
                         // Registro genérico requiere ADMIN
                         .requestMatchers("/auth/register", "/api/v1/auth/register").hasRole("ADMIN")
-                        // Solo ADMIN puede gestionar usuarios, roles y profesores
+                        // Solo ADMIN puede gestionar usuarios y roles
                         .requestMatchers("/users/**", "/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/roles/**", "/api/v1/roles/**").hasRole("ADMIN")
+                        // Acceso a perfiles de estudiantes y profesores
+                        .requestMatchers("/students/me", "/api/v1/students/me").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/students", "/api/v1/students").authenticated()
+                        .requestMatchers("/students/**", "/api/v1/students/**").hasRole("ADMIN")
+                        .requestMatchers("/teachers/me", "/api/v1/teachers/me").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/teachers", "/api/v1/teachers").authenticated()
                         .requestMatchers("/teachers/**", "/api/v1/teachers/**").hasRole("ADMIN")
                         // El resto necesita autenticación
                         .anyRequest().authenticated()
+
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
