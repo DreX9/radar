@@ -56,6 +56,12 @@ public class EventsService {
         event.setCategories(categories);
         event.setCreatedBy(createdBy);
 
+        // Rule for MANAGER role
+        if (createdBy.getRole() != null && "MANAGER".equals(createdBy.getRole().getName())) {
+            event.setEstado(Estado.PENDING);
+            event.setMotivoRechazo(null);
+        }
+
         // Resolve tags
         if (dto.tagIds() != null && !dto.tagIds().isEmpty()) {
             Set<Tags> tags = new HashSet<>(tagsRepository.findAllById(dto.tagIds()));
@@ -78,7 +84,7 @@ public class EventsService {
     }
 
     @Transactional
-    public EventsViewDTO updateEvent(Long id, EventsWriteDTO dto) {
+    public EventsViewDTO updateEvent(Long id, EventsWriteDTO dto, Users currentUser) {
         Events event = eventsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id));
 
@@ -99,6 +105,22 @@ public class EventsService {
             state = Estado.valueOf(dto.estado().toUpperCase());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + dto.estado());
+        }
+
+        // Rules for Roles:
+        if (currentUser.getRole() != null && "MANAGER".equals(currentUser.getRole().getName())) {
+            if (state == Estado.PUBLISHED || state == Estado.PENDING) {
+                state = Estado.PENDING;
+                event.setMotivoRechazo(null);
+            } else {
+                state = Estado.DRAFT;
+            }
+        } else {
+            if (state == Estado.REJECTED) {
+                event.setMotivoRechazo(dto.motivoRechazo());
+            } else {
+                event.setMotivoRechazo(null);
+            }
         }
 
         // Update scalar fields

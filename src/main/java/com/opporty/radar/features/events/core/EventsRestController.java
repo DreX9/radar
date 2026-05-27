@@ -40,7 +40,7 @@ public class EventsRestController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
     public ResponseEntity<EventsViewDTO> create(@Valid @RequestBody EventsWriteDTO dto) {
         Users currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {
@@ -50,13 +50,17 @@ public class EventsRestController {
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
     public ResponseEntity<EventsViewDTO> update(@PathVariable Long id, @Valid @RequestBody EventsWriteDTO dto) {
-        return ResponseEntity.ok(eventsService.updateEvent(id, dto));
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        return ResponseEntity.ok(eventsService.updateEvent(id, dto, currentUser));
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         eventsService.deleteEventById(id);
         return ResponseEntity.ok(String.format("Evento con ID %d eliminado exitosamente", id));

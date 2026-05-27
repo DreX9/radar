@@ -29,6 +29,7 @@ public record EventsViewDTO(
     boolean allowQrAttendance,
     Integer edadMinima,
     String requisitos,
+    String motivoRechazo,
     Long createdById,
     String createdByUsername,
     LocalDateTime createdAt,
