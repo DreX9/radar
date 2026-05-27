@@ -57,12 +57,13 @@ public record EventsWriteDTO(
     BigDecimal longitud,
 
     @NotBlank(message = "El estado del evento es requerido")
-    String estado, // ENUM as String: DRAFT, PUBLISHED, CANCELLED, FINISHED
+    String estado, // ENUM as String: DRAFT, PENDING, REJECTED, PUBLISHED, CANCELLED, FINISHED
 
     boolean requiresApproval,
     boolean allowQrAttendance,
     Integer edadMinima,
     String requisitos,
+    String motivoRechazo,
 
     @NotEmpty(message = "Se debe seleccionar al menos una categoría para el evento")
     Set<Long> categoryIds,

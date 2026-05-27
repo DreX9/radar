@@ -63,6 +63,7 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 entity.isAllowQrAttendance(),
                 entity.getEdadMinima(),
                 entity.getRequisitos(),
+                entity.getMotivoRechazo(),
                 entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null,
                 entity.getCreatedBy() != null ? entity.getCreatedBy().getUsername() : null,
                 entity.getCreatedAt(),
@@ -113,6 +114,7 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 .allowQrAttendance(dto.allowQrAttendance())
                 .edadMinima(dto.edadMinima())
                 .requisitos(dto.requisitos())
+                .motivoRechazo(dto.motivoRechazo())
                 .build();
     }
 }
