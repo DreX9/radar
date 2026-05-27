@@ -1,9 +1,13 @@
 package com.opporty.radar.features.events.core;
 
 import com.opporty.radar.common.MapperInterface;
-import com.opporty.radar.features.events.categories.EventCategories;
+import com.opporty.radar.features.events.categories.EventCategoriesMapper;
+import com.opporty.radar.features.events.categories.EventCategoriesViewDTO;
 import com.opporty.radar.features.events.tags.TagsMapper;
+import com.opporty.radar.features.events.tags.TagsViewDTO;
 import java.util.Collections;
+import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, EventsViewDTO> {
 
     private final TagsMapper tagsMapper;
+    private final EventCategoriesMapper eventCategoriesMapper;
 
     @Override
     public EventsViewDTO toDt(Events entity) {
@@ -20,13 +25,23 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
             return null;
         }
 
-        var mappedTags = entity.getTags() != null ? entity.getTags().stream()
-                .map(tagsMapper::toDt)
-                .collect(Collectors.toSet()) : Collections.<com.opporty.radar.features.events.tags.TagsViewDTO>emptySet();
+        Set<EventCategoriesViewDTO> mappedCategories = entity.getCategories() != null
+                ? entity.getCategories().stream()
+                        .map(eventCategoriesMapper::toDt)
+                        .collect(Collectors.toSet())
+                : Collections.emptySet();
 
-        var imagesList = entity.getImages() != null ? entity.getImages().stream()
-                .map(EventImages::getImageUrl)
-                .collect(Collectors.toList()) : Collections.<String>emptyList();
+        Set<TagsViewDTO> mappedTags = entity.getTags() != null
+                ? entity.getTags().stream()
+                        .map(tagsMapper::toDt)
+                        .collect(Collectors.toSet())
+                : Collections.emptySet();
+
+        List<String> imagesList = entity.getImages() != null
+                ? entity.getImages().stream()
+                        .map(EventImages::getImageUrl)
+                        .collect(Collectors.toList())
+                : Collections.emptyList();
 
         return new EventsViewDTO(
                 entity.getId(),
@@ -46,12 +61,13 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 entity.getEstado().name(),
                 entity.isRequiresApproval(),
                 entity.isAllowQrAttendance(),
-                entity.getCategory() != null ? entity.getCategory().getId() : null,
-                entity.getCategory() != null ? entity.getCategory().getNombre() : null,
+                entity.getEdadMinima(),
+                entity.getRequisitos(),
                 entity.getCreatedBy() != null ? entity.getCreatedBy().getId() : null,
                 entity.getCreatedBy() != null ? entity.getCreatedBy().getUsername() : null,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
+                mappedCategories,
                 mappedTags,
                 imagesList
         );
@@ -95,7 +111,8 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 .estado(state)
                 .requiresApproval(dto.requiresApproval())
                 .allowQrAttendance(dto.allowQrAttendance())
-                .category(EventCategories.builder().id(dto.categoryId()).build())
+                .edadMinima(dto.edadMinima())
+                .requisitos(dto.requisitos())
                 .build();
     }
 }

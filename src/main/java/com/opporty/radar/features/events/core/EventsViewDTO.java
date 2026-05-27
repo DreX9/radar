@@ -1,5 +1,6 @@
 package com.opporty.radar.features.events.core;
 
+import com.opporty.radar.features.events.categories.EventCategoriesViewDTO;
 import com.opporty.radar.features.events.tags.TagsViewDTO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,12 +27,14 @@ public record EventsViewDTO(
     String estado,
     boolean requiresApproval,
     boolean allowQrAttendance,
-    Long categoryId,
-    String categoryNombre,
+    Integer edadMinima,
+    String requisitos,
     Long createdById,
     String createdByUsername,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
+    Set<EventCategoriesViewDTO> categories,
     Set<TagsViewDTO> tags,
     List<String> imageUrls
 ) {}
+

@@ -4,6 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.opporty.radar.features.auth.roles.Roles;
@@ -12,8 +13,13 @@ import com.opporty.radar.features.auth.users.Users;
 import com.opporty.radar.features.auth.users.UsersRepository;
 import com.opporty.radar.features.auth.teachers.Teachers;
 import com.opporty.radar.features.auth.teachers.TeachersRepository;
+import com.opporty.radar.features.events.categories.EventCategories;
+import com.opporty.radar.features.events.categories.EventCategoriesRepository;
+import com.opporty.radar.features.events.tags.Tags;
+import com.opporty.radar.features.events.tags.TagsRepository;
 
 @SpringBootApplication
+@EnableScheduling
 public class RadarApplication {
 
 	public static void main(String[] args) {
@@ -31,6 +37,8 @@ public class RadarApplication {
 			RolesRepository rolesRepository,
 			UsersRepository usersRepository,
 			TeachersRepository teachersRepository,
+			EventCategoriesRepository categoriesRepository,
+			TagsRepository tagsRepository,
 			PasswordEncoder passwordEncoder) {
 
 		return args -> {
@@ -101,9 +109,89 @@ public class RadarApplication {
 							.build();
 					teachersRepository.save(adminTeacher);
 				}
+
+				// 5. Crear categorías y sus tags asociados si no existen en la BD
+				if (categoriesRepository.count() == 0) {
+					// Tecnología
+					Tags tagInnovacion = saveTag(tagsRepository, "innovación");
+					Tags tagStartup = saveTag(tagsRepository, "startup");
+					Tags tagTecnologia = saveTag(tagsRepository, "tecnología");
+					Tags tagDesarrollo = saveTag(tagsRepository, "desarrollo");
+					Tags tagProgramacion = saveTag(tagsRepository, "programación");
+					Tags tagIA = saveTag(tagsRepository, "ia");
+
+					EventCategories catTec = EventCategories.builder()
+							.nombre("Tecnología")
+							.descripcion("Eventos tecnológicos, hackathons, charlas de desarrollo de software e inteligencia artificial.")
+							.tags(new java.util.HashSet<>(java.util.Arrays.asList(tagInnovacion, tagStartup, tagTecnologia, tagDesarrollo, tagProgramacion, tagIA)))
+							.build();
+					categoriesRepository.save(catTec);
+
+					// Música
+					Tags tagFestival = saveTag(tagsRepository, "festival");
+					Tags tagConcierto = saveTag(tagsRepository, "concierto");
+					Tags tagNeonbeats = saveTag(tagsRepository, "neonbeats");
+					Tags tagCultura = saveTag(tagsRepository, "cultura");
+					Tags tagElectro = saveTag(tagsRepository, "electrónica");
+
+					EventCategories catMus = EventCategories.builder()
+							.nombre("Música")
+							.descripcion("Festivales musicales, conciertos, bandas universitarias y espectáculos sonoros.")
+							.tags(new java.util.HashSet<>(java.util.Arrays.asList(tagFestival, tagConcierto, tagNeonbeats, tagCultura, tagElectro)))
+							.build();
+					categoriesRepository.save(catMus);
+
+					// Deporte
+					Tags tagTorneo = saveTag(tagsRepository, "torneo");
+					Tags tagEsports = saveTag(tagsRepository, "esports");
+					Tags tagCompetencia = saveTag(tagsRepository, "competencia");
+					Tags tagSaludable = saveTag(tagsRepository, "saludable");
+					Tags tagFutbol = saveTag(tagsRepository, "fútbol");
+
+					EventCategories catDep = EventCategories.builder()
+							.nombre("Deporte")
+							.descripcion("Torneos deportivos, campeonatos de fútbol, vóley, atletismo y ligas de eSports.")
+							.tags(new java.util.HashSet<>(java.util.Arrays.asList(tagTorneo, tagEsports, tagCompetencia, tagSaludable, tagFutbol)))
+							.build();
+					categoriesRepository.save(catDep);
+
+					// Social
+					Tags tagComunidad = saveTag(tagsRepository, "comunidad");
+					Tags tagFeria = saveTag(tagsRepository, "feria");
+					Tags tagArte = saveTag(tagsRepository, "arte");
+					Tags tagSensorial = saveTag(tagsRepository, "sensorial");
+
+					EventCategories catSoc = EventCategories.builder()
+							.nombre("Social")
+							.descripcion("Feria de integración, eventos de voluntariado, asambleas y proyectos de impacto social.")
+							.tags(new java.util.HashSet<>(java.util.Arrays.asList(tagComunidad, tagFeria, tagArte, tagSensorial)))
+							.build();
+					categoriesRepository.save(catSoc);
+
+					// Cultural
+					Tags tagExposicion = saveTag(tagsRepository, "exposición");
+					Tags tagHistoria = saveTag(tagsRepository, "historia");
+					Tags tagAprendizaje = saveTag(tagsRepository, "aprendizaje");
+					Tags tagUniversitario = saveTag(tagsRepository, "universitario");
+
+					EventCategories catCul = EventCategories.builder()
+							.nombre("Cultural")
+							.descripcion("Charlas de historia, muestras de pintura, obras teatrales, danzas tradicionales y folclore.")
+							.tags(new java.util.HashSet<>(java.util.Arrays.asList(tagExposicion, tagHistoria, tagAprendizaje, tagUniversitario)))
+							.build();
+					categoriesRepository.save(catCul);
+				}
 			} catch (Exception e) {
 				System.err.println("Advertencia: No se pudo inicializar la base de datos semilla: " + e.getMessage());
 			}
 		};
+	}
+
+	private Tags saveTag(TagsRepository tagsRepository, String nombre) {
+		return tagsRepository.findByNombreIgnoreCase(nombre)
+				.orElseGet(() -> tagsRepository.save(
+						Tags.builder()
+								.nombre(nombre)
+								.build()));
 	}
 }

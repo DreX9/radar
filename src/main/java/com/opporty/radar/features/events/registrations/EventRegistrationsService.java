@@ -60,10 +60,12 @@ public class EventRegistrationsService {
             role = RoleInEvent.ATTENDEE;
         }
 
+        AttendanceStatus initialStatus = event.isRequiresApproval() ? AttendanceStatus.PENDING_APPROVAL : AttendanceStatus.REGISTERED;
+
         EventRegistrations registration = EventRegistrations.builder()
                 .user(user)
                 .event(event)
-                .attendanceStatus(AttendanceStatus.REGISTERED)
+                .attendanceStatus(initialStatus)
                 .qrEntryScanned(false)
                 .qrExitScanned(false)
                 .attendanceCompleted(false)
