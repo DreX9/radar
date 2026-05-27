@@ -16,6 +16,6 @@ public interface EventRegistrationsRepository extends JpaRepository<EventRegistr
     List<EventRegistrations> findByUser(Users user);
     List<EventRegistrations> findByEvent(Events event);
 
-    @Query("SELECT COUNT(er) FROM EventRegistrations er WHERE er.event = :event AND er.attendanceStatus <> 'CANCELLED'")
+    @Query("SELECT COUNT(er) FROM EventRegistrations er WHERE er.event = :event AND er.attendanceStatus NOT IN ('CANCELLED', 'REJECTED', 'PENDING_APPROVAL')")
     long countActiveRegistrationsByEvent(@Param("event") Events event);
 }

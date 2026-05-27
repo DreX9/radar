@@ -46,11 +46,14 @@ public class EventsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de fin no puede ser anterior a la fecha de inicio.");
         }
 
-        EventCategories category = eventCategoriesRepository.findById(dto.categoryId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada con ID: " + dto.categoryId()));
+        // Resolve multiple categories
+        Set<EventCategories> categories = new HashSet<>(eventCategoriesRepository.findAllById(dto.categoryIds()));
+        if (categories.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron las categorías con los IDs proporcionados.");
+        }
 
         Events event = eventsMapper.toEntity(dto);
-        event.setCategory(category);
+        event.setCategories(categories);
         event.setCreatedBy(createdBy);
 
         // Resolve tags
@@ -59,8 +62,11 @@ public class EventsService {
             event.setTags(tags);
         }
 
-        // Resolve images
+        // Resolve images: first image also populates imagenUrl as the main image
         if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
+            if (event.getImagenUrl() == null || event.getImagenUrl().isBlank()) {
+                event.setImagenUrl(dto.imageUrls().get(0));
+            }
             List<EventImages> images = dto.imageUrls().stream()
                     .map(url -> EventImages.builder().event(event).imageUrl(url).build())
                     .collect(Collectors.toList());
@@ -80,9 +86,6 @@ public class EventsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de fin no puede ser anterior a la fecha de inicio.");
         }
 
-        EventCategories category = eventCategoriesRepository.findById(dto.categoryId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada con ID: " + dto.categoryId()));
-
         // Parse enums
         Modalidad modality;
         try {
@@ -98,7 +101,7 @@ public class EventsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + dto.estado());
         }
 
-        // Update fields
+        // Update scalar fields
         event.setTitulo(dto.titulo());
         event.setDescripcion(dto.descripcion());
         event.setFechaInicio(dto.fechaInicio());
@@ -115,7 +118,16 @@ public class EventsService {
         event.setEstado(state);
         event.setRequiresApproval(dto.requiresApproval());
         event.setAllowQrAttendance(dto.allowQrAttendance());
-        event.setCategory(category);
+        event.setEdadMinima(dto.edadMinima());
+        event.setRequisitos(dto.requisitos());
+
+        // Update categories
+        if (dto.categoryIds() != null && !dto.categoryIds().isEmpty()) {
+            Set<EventCategories> categories = new HashSet<>(eventCategoriesRepository.findAllById(dto.categoryIds()));
+            event.setCategories(categories);
+        } else {
+            event.getCategories().clear();
+        }
 
         // Update tags
         if (dto.tagIds() != null) {
@@ -127,7 +139,11 @@ public class EventsService {
 
         // Update images (clear old ones and add new ones)
         event.getImages().clear();
-        if (dto.imageUrls() != null) {
+        if (dto.imageUrls() != null && !dto.imageUrls().isEmpty()) {
+            // First image becomes the main image if not explicitly set
+            if (event.getImagenUrl() == null || event.getImagenUrl().isBlank()) {
+                event.setImagenUrl(dto.imageUrls().get(0));
+            }
             List<EventImages> images = dto.imageUrls().stream()
                     .map(url -> EventImages.builder().event(event).imageUrl(url).build())
                     .collect(Collectors.toList());

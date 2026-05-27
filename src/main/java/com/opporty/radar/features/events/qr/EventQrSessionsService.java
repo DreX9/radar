@@ -115,6 +115,10 @@ public class EventQrSessionsService {
                     .notes("Auto-inscripción vía escaneo QR")
                     .build();
             registration = eventRegistrationsRepository.save(registration);
+        } else if (registration.getAttendanceStatus() == AttendanceStatus.PENDING_APPROVAL) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción está pendiente de aprobación por el organizador.");
+        } else if (registration.getAttendanceStatus() == AttendanceStatus.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido rechazada.");
         } else if (registration.getAttendanceStatus() == AttendanceStatus.CANCELLED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido cancelada.");
         }

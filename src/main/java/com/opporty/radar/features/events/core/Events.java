@@ -98,12 +98,24 @@ public class Events {
     @Column(name = "requires_approval", nullable = false)
     private boolean requiresApproval;
 
+    @Column(name = "edad_minima")
+    private Integer edadMinima;
+
+    @Column(columnDefinition = "TEXT")
+    private String requisitos;
+
     @Column(name = "allow_qr_attendance", nullable = false)
     private boolean allowQrAttendance;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private EventCategories category;
+    /** Multiple categories per event (join table: event_categories_map) */
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "event_categories_map",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<EventCategories> categories = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)

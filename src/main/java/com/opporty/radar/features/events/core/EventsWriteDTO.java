@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -60,11 +61,14 @@ public record EventsWriteDTO(
 
     boolean requiresApproval,
     boolean allowQrAttendance,
+    Integer edadMinima,
+    String requisitos,
 
-    @NotNull(message = "La categoría del evento es requerida")
-    Long categoryId,
+    @NotEmpty(message = "Se debe seleccionar al menos una categoría para el evento")
+    Set<Long> categoryIds,
 
     Set<Long> tagIds,
 
     List<String> imageUrls // List of additional image URLs
 ) {}
+
