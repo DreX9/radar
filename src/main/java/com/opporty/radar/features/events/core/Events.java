@@ -110,6 +110,12 @@ public class Events {
     @Column(name = "allow_qr_attendance", nullable = false)
     private boolean allowQrAttendance;
 
+    @Column(name = "auto_qr_entry_generated", nullable = false)
+    private boolean autoQrEntryGenerated;
+
+    @Column(name = "auto_qr_exit_generated", nullable = false)
+    private boolean autoQrExitGenerated;
+
     /** Multiple categories per event (join table: event_categories_map) */
     @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)

@@ -125,10 +125,19 @@ public class EventQrSessionsService {
 
         // Process Attendance Scan
         if (session.getType() == QrSessionType.ENTRY) {
+            if (registration.isQrEntryScanned()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya has escaneado tu Insignia de Inicio.");
+            }
             registration.setAttendanceStatus(AttendanceStatus.CHECKED_IN);
             registration.setQrEntryScanned(true);
             registration.setCheckInAt(LocalDateTime.now());
         } else if (session.getType() == QrSessionType.EXIT) {
+            if (!registration.isQrEntryScanned()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes registrar salida sin haber registrado tu entrada previamente.");
+            }
+            if (registration.isQrExitScanned()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya has escaneado tu Insignia de Fin.");
+            }
             registration.setAttendanceStatus(AttendanceStatus.COMPLETED);
             registration.setQrExitScanned(true);
             registration.setCheckOutAt(LocalDateTime.now());
