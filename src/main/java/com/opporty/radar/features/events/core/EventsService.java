@@ -109,7 +109,11 @@ public class EventsService {
 
         // Rules for Roles:
         if (currentUser.getRole() != null && "MANAGER".equals(currentUser.getRole().getName())) {
-            if (state == Estado.PUBLISHED || state == Estado.PENDING) {
+            if (event.getEstado() == Estado.SCHEDULED && 
+                (state == Estado.PUBLISHED || state == Estado.SUSPENDED || state == Estado.CANCELLED)) {
+                // Permitir al manager iniciar, suspender o cancelar un evento programado sin volver a PENDING
+                event.setMotivoRechazo(null);
+            } else if (state == Estado.PUBLISHED || state == Estado.PENDING) {
                 state = Estado.PENDING;
                 event.setMotivoRechazo(null);
             } else {

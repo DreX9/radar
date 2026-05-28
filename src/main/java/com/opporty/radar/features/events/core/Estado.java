@@ -4,7 +4,9 @@ public enum Estado {
     DRAFT,
     PENDING,
     REJECTED,
+    SCHEDULED,
     PUBLISHED,
+    SUSPENDED,
     CANCELLED,
     FINISHED
 }

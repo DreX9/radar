@@ -140,6 +140,35 @@ public class EventQrSessionsService {
         EventRegistrations saved = eventRegistrationsRepository.save(registration);
         return eventRegistrationsMapper.toDt(saved);
     }
+    
+    @Transactional
+    public QrSessionResponse getActiveSession(Long eventId, String typeStr) {
+        Events event = eventsRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + eventId));
+
+        QrSessionType sessionType;
+        try {
+            sessionType = QrSessionType.valueOf(typeStr.toUpperCase());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de sesión QR inválido: " + typeStr);
+        }
+
+        List<EventQrSessions> activeSessions = eventQrSessionsRepository.findByEventAndTypeAndActiveTrue(event, sessionType);
+        if (activeSessions.isEmpty()) {
+            return null;
+        }
+
+        EventQrSessions session = activeSessions.get(0);
+        if (session.getExpiresAt().isBefore(LocalDateTime.now())) {
+            session.setActive(false);
+            eventQrSessionsRepository.save(session);
+            return null;
+        }
+
+        String qrImageBase64 = generateQrCodeBase64(session.getToken());
+        EventQrSessionsViewDTO viewDto = eventQrSessionsMapper.toDt(session);
+        return new QrSessionResponse(viewDto, qrImageBase64);
+    }
 
     private String generateQrCodeBase64(String token) {
         try {
