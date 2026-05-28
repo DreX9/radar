@@ -1,11 +1,8 @@
-package com.opporty.radar.features.events.qr;
+package com.opporty.radar.features.notifications;
 
 import com.opporty.radar.features.auth.users.Users;
-import com.opporty.radar.features.events.core.Events;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,14 +20,14 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "event_qr_sessions")
+@Table(name = "notifications")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
-public class EventQrSessions {
+public class Notifications {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,29 +36,18 @@ public class EventQrSessions {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Events event;
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private QrSessionType type;
-
-    @Column(nullable = false, length = 255, unique = true)
+    @Column(nullable = false, length = 150)
     @ToString.Include
-    private String token;
+    private String title;
 
-    @Column(name = "generated_at", nullable = false)
-    private LocalDateTime generatedAt;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String message;
 
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
-
-    @Column(nullable = false)
-    private boolean active;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private Users createdBy;
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
