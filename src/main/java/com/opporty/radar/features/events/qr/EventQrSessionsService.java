@@ -65,6 +65,15 @@ public class EventQrSessionsService {
                 .build();
 
         EventQrSessions savedSession = eventQrSessionsRepository.save(session);
+
+        // Evitar que el CRON sobreescriba un QR generado manualmente
+        if (sessionType == QrSessionType.ENTRY) {
+            event.setAutoQrEntryGenerated(true);
+        } else if (sessionType == QrSessionType.EXIT) {
+            event.setAutoQrExitGenerated(true);
+        }
+        eventsRepository.save(event);
+
         String qrImageBase64 = generateQrCodeBase64(token);
 
         EventQrSessionsViewDTO viewDto = eventQrSessionsMapper.toDt(savedSession);
