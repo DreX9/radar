@@ -12,5 +12,6 @@ public interface EventQrSessionsRepository extends JpaRepository<EventQrSessions
     Optional<EventQrSessions> findByTokenAndActiveTrue(String token);
     List<EventQrSessions> findByEventAndTypeAndActiveTrue(Events event, QrSessionType type);
     List<EventQrSessions> findByActiveTrueAndExpiresAtBefore(LocalDateTime now);
+    boolean existsByEventAndType(Events event, QrSessionType type);
 }
 
