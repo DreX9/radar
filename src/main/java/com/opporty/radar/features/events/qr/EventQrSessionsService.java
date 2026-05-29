@@ -92,26 +92,33 @@ public class EventQrSessionsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El código QR ha expirado.");
         }
 
-        Events event = session.getEvent();
+        // findByIdWithLock: bloqueo pesimista para serializar acceso al aforo
+        // Garantiza que registros manuales y escaneos QR concurrentes no produzcan sobreaforo
+        Events event = eventsRepository.findByIdWithLock(session.getEvent().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado."));
+
         EventRegistrations registration = eventRegistrationsRepository.findByUserAndEvent(user, event).orElse(null);
 
         if (registration == null) {
+            // El usuario NO está registrado: intentar auto-inscripción vía QR
+
             // Check if the event requires approval (manual enrollment only)
             if (event.isRequiresApproval()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                        "Este evento requiere aprobación previa. Registrate en la app primero y espera la aprobación.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Este evento requiere aprobación previa. Regístrate en la app primero y espera la aprobación.");
             }
 
-            // Check if there is capacity left
+            // Verificar aforo con bloqueo ya adquirido — ninguna otra transacción puede
+            // modificar registros concurrentes hasta que esta transacción finalice
             if (event.getCapacidad() != null && event.getCapacidad() > 0) {
                 long activeCount = eventRegistrationsRepository.countActiveRegistrationsByEvent(event);
                 if (activeCount >= event.getCapacidad()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                            "La capacidad máxima del evento ha sido alcanzada. No se permite la auto-inscripción.");
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "El aforo de este evento ha sido completado. No es posible registrarte vía código QR.");
                 }
             }
 
-            // Auto-enroll user
+            // Auto-inscribir al usuario
             registration = EventRegistrations.builder()
                     .user(user)
                     .event(event)
@@ -124,12 +131,19 @@ public class EventQrSessionsService {
                     .notes("Auto-inscripción vía escaneo QR")
                     .build();
             registration = eventRegistrationsRepository.save(registration);
-        } else if (registration.getAttendanceStatus() == AttendanceStatus.PENDING_APPROVAL) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción está pendiente de aprobación por el organizador.");
-        } else if (registration.getAttendanceStatus() == AttendanceStatus.REJECTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido rechazada.");
-        } else if (registration.getAttendanceStatus() == AttendanceStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido cancelada.");
+
+        } else {
+            // El usuario YA está registrado: validar estado antes de procesar el QR
+
+            if (registration.getAttendanceStatus() == AttendanceStatus.PENDING_APPROVAL) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción está pendiente de aprobación por el organizador.");
+            }
+            if (registration.getAttendanceStatus() == AttendanceStatus.REJECTED) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido rechazada.");
+            }
+            if (registration.getAttendanceStatus() == AttendanceStatus.CANCELLED) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido cancelada.");
+            }
         }
 
         // Process Attendance Scan

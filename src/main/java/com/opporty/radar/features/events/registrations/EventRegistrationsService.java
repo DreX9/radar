@@ -37,7 +37,8 @@ public class EventRegistrationsService {
 
     @Transactional
     public EventRegistrationsViewDTO registerUser(EventRegistrationsWriteDTO dto, Users user) {
-        Events event = eventsRepository.findById(dto.eventId())
+        // findByIdWithLock: bloqueo pesimista para evitar race condition en el aforo
+        Events event = eventsRepository.findByIdWithLock(dto.eventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + dto.eventId()));
 
         // Check duplicate registration
@@ -49,7 +50,8 @@ public class EventRegistrationsService {
         if (event.getCapacidad() != null && event.getCapacidad() > 0) {
             long activeCount = eventRegistrationsRepository.countActiveRegistrationsByEvent(event);
             if (activeCount >= event.getCapacidad()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La capacidad máxima de este evento ha sido alcanzada.");
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "El aforo de este evento ha sido completado. No hay más lugares disponibles.");
             }
         }
 
