@@ -52,6 +52,7 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 entity.getHoraInicio(),
                 entity.getHoraFin(),
                 entity.getCapacidad(),
+                entity.getInscritosCount(),
                 entity.getImagenUrl(),
                 entity.getModalidad().name(),
                 entity.getLugar(),
