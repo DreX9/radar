@@ -25,7 +25,7 @@ public class EventQrSessionsRestController {
     private final EventQrSessionsService eventQrSessionsService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
     public ResponseEntity<QrSessionResponse> createSession(@Valid @RequestBody EventQrSessionsWriteDTO dto) {
         Users currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {

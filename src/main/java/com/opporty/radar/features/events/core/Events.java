@@ -33,6 +33,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
@@ -71,6 +72,9 @@ public class Events {
     private LocalTime horaFin;
 
     private Integer capacidad;
+
+    @Formula("(SELECT COUNT(er.id) FROM event_registrations er WHERE er.event_id = id AND er.attendance_status NOT IN ('CANCELLED', 'REJECTED', 'PENDING_APPROVAL'))")
+    private Integer inscritosCount;
 
     @Column(name = "imagen_url", length = 500)
     private String imagenUrl;

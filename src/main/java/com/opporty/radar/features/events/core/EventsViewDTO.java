@@ -18,6 +18,7 @@ public record EventsViewDTO(
     LocalTime horaInicio,
     LocalTime horaFin,
     Integer capacidad,
+    Integer inscritosCount,
     String imagenUrl,
     String modalidad,
     String lugar,
