@@ -33,7 +33,20 @@ public class EventQrSessionsService {
     @Transactional
     public QrSessionResponse generateQrSession(EventQrSessionsWriteDTO dto, Users creator) {
         Events event = eventsRepository.findById(dto.eventId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + dto.eventId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Evento no encontrado con ID: " + dto.eventId()));
+
+        // Un MANAGER solo puede generar QR de sus propios eventos.
+        // ADMIN y TEACHER tienen acceso global.
+        String roleName = creator.getRole() != null ? creator.getRole().getName() : "";
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(roleName);
+        boolean isTeacher = "TEACHER".equalsIgnoreCase(roleName);
+        boolean isOwner = event.getCreatedBy() != null && event.getCreatedBy().getId().equals(creator.getId());
+
+        if (!isAdmin && !isTeacher && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "No tienes permiso para generar códigos QR de este evento. Solo el creador del evento o un administrador pueden hacerlo.");
+        }
 
         QrSessionType sessionType;
         try {
@@ -43,7 +56,8 @@ public class EventQrSessionsService {
         }
 
         // Deactivate all current active sessions of same type for this event
-        List<EventQrSessions> activeSessions = eventQrSessionsRepository.findByEventAndTypeAndActiveTrue(event, sessionType);
+        List<EventQrSessions> activeSessions = eventQrSessionsRepository.findByEventAndTypeAndActiveTrue(event,
+                sessionType);
         for (EventQrSessions activeSession : activeSessions) {
             activeSession.setActive(false);
         }
@@ -93,7 +107,8 @@ public class EventQrSessionsService {
         }
 
         // findByIdWithLock: bloqueo pesimista para serializar acceso al aforo
-        // Garantiza que registros manuales y escaneos QR concurrentes no produzcan sobreaforo
+        // Garantiza que registros manuales y escaneos QR concurrentes no produzcan
+        // sobreaforo
         Events event = eventsRepository.findByIdWithLock(session.getEvent().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado."));
 
@@ -136,13 +151,16 @@ public class EventQrSessionsService {
             // El usuario YA está registrado: validar estado antes de procesar el QR
 
             if (registration.getAttendanceStatus() == AttendanceStatus.PENDING_APPROVAL) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción está pendiente de aprobación por el organizador.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Tu inscripción está pendiente de aprobación por el organizador.");
             }
             if (registration.getAttendanceStatus() == AttendanceStatus.REJECTED) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido rechazada.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Tu inscripción a este evento ha sido rechazada.");
             }
             if (registration.getAttendanceStatus() == AttendanceStatus.CANCELLED) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tu inscripción a este evento ha sido cancelada.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Tu inscripción a este evento ha sido cancelada.");
             }
         }
 
@@ -156,7 +174,8 @@ public class EventQrSessionsService {
             registration.setCheckInAt(LocalDateTime.now());
         } else if (session.getType() == QrSessionType.EXIT) {
             if (!registration.isQrEntryScanned()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes registrar salida sin haber registrado tu entrada previamente.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "No puedes registrar salida sin haber registrado tu entrada previamente.");
             }
             if (registration.isQrExitScanned()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ya has escaneado tu Insignia de Fin.");
@@ -172,11 +191,12 @@ public class EventQrSessionsService {
         EventRegistrations saved = eventRegistrationsRepository.save(registration);
         return eventRegistrationsMapper.toDt(saved);
     }
-    
+
     @Transactional
     public QrSessionResponse getActiveSession(Long eventId, String typeStr) {
         Events event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + eventId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Evento no encontrado con ID: " + eventId));
 
         QrSessionType sessionType;
         try {
@@ -185,7 +205,8 @@ public class EventQrSessionsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de sesión QR inválido: " + typeStr);
         }
 
-        List<EventQrSessions> activeSessions = eventQrSessionsRepository.findByEventAndTypeAndActiveTrue(event, sessionType);
+        List<EventQrSessions> activeSessions = eventQrSessionsRepository.findByEventAndTypeAndActiveTrue(event,
+                sessionType);
         if (activeSessions.isEmpty()) {
             return null;
         }
@@ -207,14 +228,16 @@ public class EventQrSessionsService {
             int width = 300;
             int height = 300;
             com.google.zxing.qrcode.QRCodeWriter qrCodeWriter = new com.google.zxing.qrcode.QRCodeWriter();
-            com.google.zxing.common.BitMatrix bitMatrix = qrCodeWriter.encode(token, com.google.zxing.BarcodeFormat.QR_CODE, width, height);
+            com.google.zxing.common.BitMatrix bitMatrix = qrCodeWriter.encode(token,
+                    com.google.zxing.BarcodeFormat.QR_CODE, width, height);
 
             ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
             com.google.zxing.client.j2se.MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
             byte[] pngData = pngOutputStream.toByteArray();
             return Base64.getEncoder().encodeToString(pngData);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al generar el código QR utilizando ZXing.", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al generar el código QR utilizando ZXing.", e);
         }
     }
 }
