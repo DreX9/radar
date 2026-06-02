@@ -30,9 +30,11 @@ public class EventAutoQrScheduler {
         LocalDate today = LocalDate.now();
         LocalTime nowTime = LocalTime.now();
 
-        // Buscar todos los eventos del día de hoy
+        // Buscar todos los eventos del día de hoy que estén Aprobados/Programados o Públicos
         List<Events> todaysEvents = eventsRepository.findAll().stream()
-                .filter(e -> e.getFechaInicio() != null && e.getFechaInicio().equals(today))
+                .filter(e -> e.getFechaInicio() != null && e.getFechaInicio().equals(today) &&
+                             (e.getEstado() == com.opporty.radar.features.events.core.Estado.SCHEDULED || 
+                              e.getEstado() == com.opporty.radar.features.events.core.Estado.PUBLISHED))
                 .toList();
 
         for (Events event : todaysEvents) {

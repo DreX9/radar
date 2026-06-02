@@ -97,6 +97,7 @@ public class EventsService {
     public EventsViewDTO updateEvent(Long id, EventsWriteDTO dto, Users currentUser) {
         Events event = eventsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id));
+        Estado oldState = event.getEstado();
 
         if (dto.fechaFin().isBefore(dto.fechaInicio())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de fin no puede ser anterior a la fecha de inicio.");
@@ -186,7 +187,6 @@ public class EventsService {
             event.getImages().addAll(images);
         }
 
-        Estado oldState = event.getEstado();
         String newState = state.toString();
         Events updatedEvent = eventsRepository.save(event);
 
@@ -194,6 +194,14 @@ public class EventsService {
             String title = "PUBLISHED".equals(newState) ? "Evento Aprobado 🎉" : "Evento Rechazado ❌";
             String msg = "Tu evento '" + updatedEvent.getTitulo() + "' ha sido " + ("PUBLISHED".equals(newState) ? "aprobado." : "rechazado.");
             notificationsService.createNotification(updatedEvent.getCreatedBy(), title, msg, updatedEvent.getId());
+        }
+
+        if (oldState != Estado.PENDING && "PENDING".equals(newState)) {
+            notificationsService.notifyAdmins(
+                    "Correcciones Enviadas",
+                    "El manager @" + currentUser.getUsername() + " ha reenviado el evento '" + updatedEvent.getTitulo() + "' para su revisión.",
+                    updatedEvent.getId()
+            );
         }
 
         return eventsMapper.toDt(updatedEvent);
