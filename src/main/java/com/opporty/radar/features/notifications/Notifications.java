@@ -49,6 +49,9 @@ public class Notifications {
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
+    @Column(name = "event_id")
+    private Long eventId;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -22,7 +22,7 @@ public class EventAutoQrScheduler {
 
     private final EventsRepository eventsRepository;
     private final EventQrSessionsRepository eventQrSessionsRepository;
-    private final NotificationsRepository notificationsRepository;
+    private final com.opporty.radar.features.notifications.NotificationsService notificationsService;
 
     @Scheduled(fixedRate = 60000) // Se ejecuta cada minuto
     @Transactional
@@ -46,8 +46,9 @@ public class EventAutoQrScheduler {
                     event.setAutoQrEntryGenerated(true);
                     eventsRepository.save(event);
                     
-                    createNotification(event, "QR de Inicio Autogenerado", 
-                            "El QR de INICIO para el evento '" + event.getTitulo() + "' se ha autogenerado como contingencia.");
+                    notificationsService.createNotification(event.getCreatedBy(), "⚠️ Evento próximo a iniciar", 
+                            "El QR de INICIO para el evento '" + event.getTitulo() + "' se ha autogenerado. Puedes suspenderlo si hay algún inconveniente.",
+                            event.getId());
                     log.info("[AutoQR] QR de INICIO generado para evento ID: {}", event.getId());
                 }
             }
@@ -62,9 +63,12 @@ public class EventAutoQrScheduler {
                     event.setAutoQrExitGenerated(true);
                     eventsRepository.save(event);
                     
-                    createNotification(event, "QR de Fin Autogenerado", 
-                            "El QR de SALIDA para el evento '" + event.getTitulo() + "' se ha autogenerado como contingencia.");
-                    log.info("[AutoQR] QR de SALIDA generado para evento ID: {}", event.getId());
+                    notificationsService.createNotification(
+                    event.getCreatedBy(),
+                    "🟢 Evento próximo a finalizar",
+                    "El QR de SALIDA para el evento '" + event.getTitulo() + "' se ha autogenerado.",
+                    event.getId()
+            );        log.info("[AutoQR] QR de SALIDA generado para evento ID: {}", event.getId());
                 }
             }
         }
@@ -95,13 +99,5 @@ public class EventAutoQrScheduler {
         eventQrSessionsRepository.save(session);
     }
 
-    private void createNotification(Events event, String title, String message) {
-        Notifications notification = Notifications.builder()
-                .user(event.getCreatedBy())
-                .title(title)
-                .message(message)
-                .isRead(false)
-                .build();
-        notificationsRepository.save(notification);
-    }
+
 }

@@ -24,6 +24,7 @@ public class EventsService {
     private final EventCategoriesRepository eventCategoriesRepository;
     private final TagsRepository tagsRepository;
     private final EventsMapper eventsMapper;
+    private final com.opporty.radar.features.notifications.NotificationsService notificationsService;
 
     @Transactional(readOnly = true)
     public List<EventsViewDTO> getAllEvents() {
@@ -80,6 +81,15 @@ public class EventsService {
         }
 
         Events savedEvent = eventsRepository.save(event);
+
+        if (savedEvent.getEstado() == Estado.PENDING) {
+            notificationsService.notifyAdmins(
+                    "Solicitud de Aprobación",
+                    "El manager @" + createdBy.getUsername() + " ha solicitado publicar '" + savedEvent.getTitulo() + "'.",
+                    savedEvent.getId()
+            );
+        }
+
         return eventsMapper.toDt(savedEvent);
     }
 
@@ -176,7 +186,16 @@ public class EventsService {
             event.getImages().addAll(images);
         }
 
+        Estado oldState = event.getEstado();
+        String newState = state.toString();
         Events updatedEvent = eventsRepository.save(event);
+
+        if (oldState == Estado.PENDING && ("PUBLISHED".equals(newState) || "REJECTED".equals(newState))) {
+            String title = "PUBLISHED".equals(newState) ? "Evento Aprobado 🎉" : "Evento Rechazado ❌";
+            String msg = "Tu evento '" + updatedEvent.getTitulo() + "' ha sido " + ("PUBLISHED".equals(newState) ? "aprobado." : "rechazado.");
+            notificationsService.createNotification(updatedEvent.getCreatedBy(), title, msg, updatedEvent.getId());
+        }
+
         return eventsMapper.toDt(updatedEvent);
     }
 

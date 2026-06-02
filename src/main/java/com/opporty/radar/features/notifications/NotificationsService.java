@@ -15,6 +15,7 @@ public class NotificationsService {
 
     private final NotificationsRepository notificationsRepository;
     private final NotificationsMapper notificationsMapper;
+    private final com.opporty.radar.features.auth.users.UsersRepository usersRepository;
 
     @Transactional(readOnly = true)
     public List<NotificationsViewDTO> getUserNotifications(Users user) {
@@ -41,5 +42,25 @@ public class NotificationsService {
         notification.setRead(true);
         Notifications saved = notificationsRepository.save(notification);
         return notificationsMapper.toDt(saved);
+    }
+
+    @Transactional
+    public void createNotification(Users user, String title, String message, Long eventId) {
+        Notifications notification = Notifications.builder()
+                .user(user)
+                .title(title)
+                .message(message)
+                .isRead(false)
+                .eventId(eventId)
+                .build();
+        notificationsRepository.save(notification);
+    }
+
+    @Transactional
+    public void notifyAdmins(String title, String message, Long eventId) {
+        List<Users> admins = usersRepository.findByRoleName("ADMIN");
+        for (Users admin : admins) {
+            createNotification(admin, title, message, eventId);
+        }
     }
 }
