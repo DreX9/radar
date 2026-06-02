@@ -24,6 +24,7 @@ public class EventsService {
     private final EventCategoriesRepository eventCategoriesRepository;
     private final TagsRepository tagsRepository;
     private final EventsMapper eventsMapper;
+    private final com.opporty.radar.features.notifications.NotificationsService notificationsService;
 
     @Transactional(readOnly = true)
     public List<EventsViewDTO> getAllEvents() {
@@ -80,6 +81,15 @@ public class EventsService {
         }
 
         Events savedEvent = eventsRepository.save(event);
+
+        if (savedEvent.getEstado() == Estado.PENDING) {
+            notificationsService.notifyAdmins(
+                    "Solicitud de Aprobación",
+                    "El manager @" + createdBy.getUsername() + " ha solicitado publicar '" + savedEvent.getTitulo() + "'.",
+                    savedEvent.getId()
+            );
+        }
+
         return eventsMapper.toDt(savedEvent);
     }
 
@@ -87,6 +97,7 @@ public class EventsService {
     public EventsViewDTO updateEvent(Long id, EventsWriteDTO dto, Users currentUser) {
         Events event = eventsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id));
+        Estado oldState = event.getEstado();
 
         if (dto.fechaFin().isBefore(dto.fechaInicio())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de fin no puede ser anterior a la fecha de inicio.");
@@ -176,7 +187,23 @@ public class EventsService {
             event.getImages().addAll(images);
         }
 
+        String newState = state.toString();
         Events updatedEvent = eventsRepository.save(event);
+
+        if (oldState == Estado.PENDING && ("PUBLISHED".equals(newState) || "REJECTED".equals(newState))) {
+            String title = "PUBLISHED".equals(newState) ? "Evento Aprobado 🎉" : "Evento Rechazado ❌";
+            String msg = "Tu evento '" + updatedEvent.getTitulo() + "' ha sido " + ("PUBLISHED".equals(newState) ? "aprobado." : "rechazado.");
+            notificationsService.createNotification(updatedEvent.getCreatedBy(), title, msg, updatedEvent.getId());
+        }
+
+        if (oldState != Estado.PENDING && "PENDING".equals(newState)) {
+            notificationsService.notifyAdmins(
+                    "Correcciones Enviadas",
+                    "El manager @" + currentUser.getUsername() + " ha reenviado el evento '" + updatedEvent.getTitulo() + "' para su revisión.",
+                    updatedEvent.getId()
+            );
+        }
+
         return eventsMapper.toDt(updatedEvent);
     }
 
