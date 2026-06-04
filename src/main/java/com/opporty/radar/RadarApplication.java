@@ -51,12 +51,14 @@ public class RadarApplication {
 										.description("Administrador del sistema")
 										.build()));
 
-				// Intentar migrar/renombrar rol USER a MANAGER si existe
-				rolesRepository.findByName("USER").ifPresent(userRole -> {
-					userRole.setName("MANAGER");
-					userRole.setDescription("Manager de Eventos");
-					rolesRepository.save(userRole);
-				});
+				// Intentar migrar/renombrar rol USER a MANAGER si existe (solo si MANAGER no existe aún)
+				if (rolesRepository.findByName("MANAGER").isEmpty()) {
+					rolesRepository.findByName("USER").ifPresent(userRole -> {
+						userRole.setName("MANAGER");
+						userRole.setDescription("Manager de Eventos");
+						rolesRepository.save(userRole);
+					});
+				}
 
 				// 2. Crear rol MANAGER si no existe
 				rolesRepository.findByName("MANAGER")
