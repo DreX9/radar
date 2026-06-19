@@ -1,6 +1,7 @@
 package com.opporty.radar.features.auth.users;
 
 import java.util.List;
+import java.util.HashSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,10 @@ import com.opporty.radar.features.auth.roles.Roles;
 import com.opporty.radar.features.auth.roles.RolesRepository;
 import com.opporty.radar.features.auth.students.StudentsRepository;
 import com.opporty.radar.features.auth.teachers.TeachersRepository;
+import com.opporty.radar.features.events.categories.EventCategories;
+import com.opporty.radar.features.events.categories.EventCategoriesRepository;
+import com.opporty.radar.features.events.categories.EventCategoriesMapper;
+import com.opporty.radar.features.events.categories.EventCategoriesViewDTO;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,6 +24,8 @@ public class UsersService {
     private final StudentsRepository studentsRepository;
     private final TeachersRepository teachersRepository;
     private final RolesRepository rolesRepository;
+    private final EventCategoriesRepository eventCategoriesRepository;
+    private final EventCategoriesMapper eventCategoriesMapper;
 
     public List<UsersViewDTO> getAllUsers() {
         return userRepository.findAll().stream().map(userMapper::toDt).toList();
@@ -77,5 +84,30 @@ public class UsersService {
         userRepository.save(user);
 
         return userMapper.toDt(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EventCategoriesViewDTO> getUserInterests(Users user) {
+        Users persistedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        return persistedUser.getInterests().stream()
+                .map(eventCategoriesMapper::toDt)
+                .toList();
+    }
+
+    @Transactional
+    public List<EventCategoriesViewDTO> updateUserInterests(Users user, List<Long> categoryIds) {
+        Users persistedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        List<EventCategories> categories = eventCategoriesRepository.findAllById(categoryIds);
+        persistedUser.setInterests(new HashSet<>(categories));
+        userRepository.save(persistedUser);
+
+        return persistedUser.getInterests().stream()
+                .map(eventCategoriesMapper::toDt)
+                .toList();
     }
 }

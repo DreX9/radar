@@ -15,6 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.opporty.radar.security.SecurityUtils;
+import com.opporty.radar.features.events.categories.EventCategoriesViewDTO;
 
 @RestController
 @RequestMapping("users")
@@ -51,5 +54,30 @@ public class UsersRestController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateRoleRequest request) {
         return ResponseEntity.ok(usersService.updateUserRole(id, request.role()));
+    }
+
+    public record UpdateInterestsRequest(
+            List<Long> categoryIds
+    ) {}
+
+    @GetMapping("me/interests")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventCategoriesViewDTO>> getMyInterests() {
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        return ResponseEntity.ok(usersService.getUserInterests(currentUser));
+    }
+
+    @PutMapping("me/interests")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventCategoriesViewDTO>> updateMyInterests(
+            @Valid @RequestBody UpdateInterestsRequest request) {
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        return ResponseEntity.ok(usersService.updateUserInterests(currentUser, request.categoryIds()));
     }
 }
