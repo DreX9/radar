@@ -28,7 +28,7 @@ public class EventsService {
 
     @Transactional(readOnly = true)
     public List<EventsViewDTO> getAllEvents() {
-        return eventsRepository.findAll()
+        return eventsRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(eventsMapper::toDt)
                 .collect(Collectors.toList());
@@ -213,5 +213,14 @@ public class EventsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id);
         }
         eventsRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public EventUpdatesDTO checkUpdates() {
+        long eventsCount = eventsRepository.countPublishedEvents();
+        java.time.LocalDateTime eventsLastUpdated = eventsRepository.getMaxPublishedEventUpdateTime();
+        long regsCount = eventsRepository.countRegistrationsForPublishedEvents();
+        java.time.LocalDateTime regsLastUpdated = eventsRepository.getMaxRegistrationTimeForPublishedEvents();
+        return new EventUpdatesDTO(eventsCount, eventsLastUpdated, regsCount, regsLastUpdated);
     }
 }
