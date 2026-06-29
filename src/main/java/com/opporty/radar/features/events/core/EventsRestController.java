@@ -55,7 +55,7 @@ public class EventsRestController {
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EventsViewDTO> update(@PathVariable Long id, @Valid @RequestBody EventsWriteDTO dto) {
         Users currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {
@@ -65,7 +65,7 @@ public class EventsRestController {
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         eventsService.deleteEventById(id);
         return ResponseEntity.ok(String.format("Evento con ID %d eliminado exitosamente", id));
