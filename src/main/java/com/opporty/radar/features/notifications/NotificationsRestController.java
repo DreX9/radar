@@ -50,4 +50,15 @@ public class NotificationsRestController {
         }
         return ResponseEntity.ok(notificationsService.markAsRead(id, currentUser));
     }
+
+    @PatchMapping("mark-all-read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markAllAsRead() {
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        notificationsService.markAllAsRead(currentUser);
+        return ResponseEntity.ok().build();
+    }
 }

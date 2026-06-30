@@ -97,6 +97,16 @@ public class EventsService {
     public EventsViewDTO updateEvent(Long id, EventsWriteDTO dto, Users currentUser) {
         Events event = eventsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id));
+        
+        boolean isAdmin = false;
+        if (currentUser.getRole() != null) {
+            isAdmin = "ADMIN".equals(currentUser.getRole().getName());
+        }
+        
+        if (!isAdmin && !event.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para modificar este evento.");
+        }
+
         Estado oldState = event.getEstado();
 
         if (dto.fechaFin().isBefore(dto.fechaInicio())) {
@@ -208,9 +218,17 @@ public class EventsService {
     }
 
     @Transactional
-    public void deleteEventById(Long id) {
-        if (!eventsRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id);
+    public void deleteEventById(Long id, Users currentUser) {
+        Events event = eventsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + id));
+        
+        boolean isAdmin = false;
+        if (currentUser.getRole() != null) {
+            isAdmin = "ADMIN".equals(currentUser.getRole().getName());
+        }
+        
+        if (!isAdmin && !event.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para eliminar este evento.");
         }
         eventsRepository.deleteById(id);
     }

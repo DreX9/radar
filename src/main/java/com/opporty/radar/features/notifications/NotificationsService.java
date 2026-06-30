@@ -63,4 +63,13 @@ public class NotificationsService {
             createNotification(admin, title, message, eventId);
         }
     }
+
+    @Transactional
+    public void markAllAsRead(Users user) {
+        List<Notifications> unread = notificationsRepository.findByUserAndIsReadFalse(user);
+        for (Notifications notification : unread) {
+            notification.setRead(true);
+        }
+        notificationsRepository.saveAll(unread);
+    }
 }
