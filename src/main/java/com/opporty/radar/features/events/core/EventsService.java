@@ -27,6 +27,17 @@ public class EventsService {
     private final com.opporty.radar.features.notifications.NotificationsService notificationsService;
 
     @Transactional(readOnly = true)
+    public UpdateCheckDTO checkUpdates() {
+        long eventsCount = eventsRepository.count();
+        return new UpdateCheckDTO(
+                eventsCount,
+                java.time.LocalDateTime.now(),
+                0L,
+                java.time.LocalDateTime.now()
+        );
+    }
+
+    @Transactional(readOnly = true)
     public List<EventsViewDTO> getAllEvents() {
         return eventsRepository.findAll()
                 .stream()
@@ -124,7 +135,7 @@ public class EventsService {
                 (state == Estado.PUBLISHED || state == Estado.SUSPENDED || state == Estado.CANCELLED)) {
                 // Permitir al manager iniciar, suspender o cancelar un evento programado sin volver a PENDING
                 event.setMotivoRechazo(null);
-            } else if (state == Estado.PUBLISHED || state == Estado.PENDING) {
+            } else if (state == Estado.PUBLISHED || state == Estado.PENDING || state == Estado.FINISHED) {
                 state = Estado.PENDING;
                 event.setMotivoRechazo(null);
             } else {
@@ -157,6 +168,7 @@ public class EventsService {
         event.setAllowQrAttendance(dto.allowQrAttendance());
         event.setEdadMinima(dto.edadMinima());
         event.setRequisitos(dto.requisitos());
+        event.setGrabacionUrl(dto.grabacionUrl());
 
         // Update categories
         if (dto.categoryIds() != null && !dto.categoryIds().isEmpty()) {

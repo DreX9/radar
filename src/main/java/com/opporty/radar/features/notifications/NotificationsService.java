@@ -45,6 +45,15 @@ public class NotificationsService {
     }
 
     @Transactional
+    public void markAllAsRead(Users user) {
+        List<Notifications> unread = notificationsRepository.findByUserAndIsReadFalse(user);
+        for (Notifications n : unread) {
+            n.setRead(true);
+        }
+        notificationsRepository.saveAll(unread);
+    }
+
+    @Transactional
     public void createNotification(Users user, String title, String message, Long eventId) {
         Notifications notification = Notifications.builder()
                 .user(user)

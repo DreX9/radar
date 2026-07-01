@@ -70,6 +70,7 @@ public record EventsWriteDTO(
 
     Set<Long> tagIds,
 
-    List<String> imageUrls // List of additional image URLs
+    List<String> imageUrls, // List of additional image URLs
+    String grabacionUrl
 ) {}
 

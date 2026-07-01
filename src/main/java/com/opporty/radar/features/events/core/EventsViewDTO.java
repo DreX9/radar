@@ -37,6 +37,7 @@ public record EventsViewDTO(
     LocalDateTime updatedAt,
     Set<EventCategoriesViewDTO> categories,
     Set<TagsViewDTO> tags,
-    List<String> imageUrls
+    List<String> imageUrls,
+    String grabacionUrl
 ) {}
 

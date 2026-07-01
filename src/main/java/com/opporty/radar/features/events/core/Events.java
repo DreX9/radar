@@ -154,4 +154,8 @@ public class Events {
     @Builder.Default
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventImages> images = new ArrayList<>();
+
+    @Column(name = "grabacion_url", length = 500)
+    private String grabacionUrl;
 }
+

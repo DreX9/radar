@@ -34,6 +34,11 @@ public class EventsRestController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("check-updates")
+    public ResponseEntity<UpdateCheckDTO> checkUpdates() {
+        return ResponseEntity.ok(eventsService.checkUpdates());
+    }
+
     @GetMapping("{id}")
     public ResponseEntity<EventsViewDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(eventsService.getEventById(id));

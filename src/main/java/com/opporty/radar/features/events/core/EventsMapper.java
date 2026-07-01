@@ -71,7 +71,8 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 entity.getUpdatedAt(),
                 mappedCategories,
                 mappedTags,
-                imagesList
+                imagesList,
+                entity.getGrabacionUrl()
         );
     }
 
@@ -116,6 +117,7 @@ public class EventsMapper implements MapperInterface<Events, EventsWriteDTO, Eve
                 .edadMinima(dto.edadMinima())
                 .requisitos(dto.requisitos())
                 .motivoRechazo(dto.motivoRechazo())
+                .grabacionUrl(dto.grabacionUrl())
                 .build();
     }
 }
