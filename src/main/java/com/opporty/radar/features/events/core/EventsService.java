@@ -135,7 +135,7 @@ public class EventsService {
                 (state == Estado.PUBLISHED || state == Estado.SUSPENDED || state == Estado.CANCELLED)) {
                 // Permitir al manager iniciar, suspender o cancelar un evento programado sin volver a PENDING
                 event.setMotivoRechazo(null);
-            } else if (state == Estado.PUBLISHED || state == Estado.PENDING || state == Estado.FINISHED) {
+            } else if (state == Estado.PUBLISHED || state == Estado.PENDING) {
                 state = Estado.PENDING;
                 event.setMotivoRechazo(null);
             } else {
