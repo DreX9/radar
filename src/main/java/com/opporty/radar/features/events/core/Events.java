@@ -3,6 +3,8 @@ package com.opporty.radar.features.events.core;
 import com.opporty.radar.features.auth.users.Users;
 import com.opporty.radar.features.events.categories.EventCategories;
 import com.opporty.radar.features.events.tags.Tags;
+import com.opporty.radar.features.events.qr.EventQrSessions;
+import com.opporty.radar.features.events.registrations.EventRegistrations;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -155,7 +157,12 @@ public class Events {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventImages> images = new ArrayList<>();
 
-    @Column(name = "grabacion_url", length = 500)
-    private String grabacionUrl;
+    @Builder.Default
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventRegistrations> registrations = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventQrSessions> qrSessions = new ArrayList<>();
 }
 

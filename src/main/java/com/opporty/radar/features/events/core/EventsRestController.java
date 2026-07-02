@@ -35,7 +35,7 @@ public class EventsRestController {
     }
 
     @GetMapping("check-updates")
-    public ResponseEntity<UpdateCheckDTO> checkUpdates() {
+    public ResponseEntity<EventUpdatesDTO> checkUpdates() {
         return ResponseEntity.ok(eventsService.checkUpdates());
     }
 
@@ -67,7 +67,11 @@ public class EventsRestController {
     @DeleteMapping("{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        eventsService.deleteEventById(id);
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        eventsService.deleteEventById(id, currentUser);
         return ResponseEntity.ok(String.format("Evento con ID %d eliminado exitosamente", id));
     }
 }

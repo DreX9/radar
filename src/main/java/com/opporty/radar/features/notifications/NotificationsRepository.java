@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationsRepository extends JpaRepository<Notifications, Long> {
     List<Notifications> findByUserOrderByCreatedAtDesc(Users user);
+    List<Notifications> findByUserAndIsReadFalse(Users user);
     long countByUserAndIsReadFalse(Users user);
     List<Notifications> findByUserAndIsReadFalse(Users user);
 }
