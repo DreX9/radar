@@ -81,6 +81,21 @@ public class EventRegistrationsService {
     }
 
     @Transactional
+    public void unregisterUser(Long eventId, Users user) {
+        Events event = eventsRepository.findByIdWithLock(eventId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento no encontrado con ID: " + eventId));
+
+        EventRegistrations registration = eventRegistrationsRepository.findByUserAndEvent(user, event)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No estás registrado en este evento."));
+
+        if (registration.isAttendanceCompleted() || registration.getAttendanceStatus() == AttendanceStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes desinscribirte porque ya completaste tu asistencia.");
+        }
+
+        eventRegistrationsRepository.delete(registration);
+    }
+
+    @Transactional
     public EventRegistrationsViewDTO updateStatus(Long registrationId, String statusStr) {
         EventRegistrations registration = eventRegistrationsRepository.findById(registrationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Registro de evento no encontrado con ID: " + registrationId));

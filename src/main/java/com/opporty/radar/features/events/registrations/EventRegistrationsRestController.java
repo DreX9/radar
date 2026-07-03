@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,6 +60,16 @@ public class EventRegistrationsRestController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
         }
         return ResponseEntity.ok(eventRegistrationsService.registerUser(dto, currentUser));
+    }
+
+    @DeleteMapping("/event/{eventId}")
+    public ResponseEntity<Void> unregister(@PathVariable Long eventId) {
+        Users currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no autenticado");
+        }
+        eventRegistrationsService.unregisterUser(eventId, currentUser);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}/status")
