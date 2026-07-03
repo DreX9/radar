@@ -19,6 +19,7 @@ public record UsersViewDTO(
         String phoneNumber,
         String biography,
         LocalDate hiringDate,
-        String titulo
+        String titulo,
+        String profilePictureUrl
 ) {}
 

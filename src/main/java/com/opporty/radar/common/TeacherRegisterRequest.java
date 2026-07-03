@@ -20,7 +20,8 @@ public record TeacherRegisterRequest(
         String biography,
         @NotBlank String status,
         LocalDate hiringDate,
-        @NotNull Long roleId
+        @NotNull Long roleId,
+        String profilePictureUrl
 ) {
 }
 

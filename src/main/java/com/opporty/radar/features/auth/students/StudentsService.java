@@ -57,6 +57,10 @@ public class StudentsService {
         existing.setPhoneNumber(dto.phoneNumber());
         existing.setStatus(dto.status());
 
+        if (existing.getUser() != null) {
+            existing.getUser().setProfilePictureUrl(dto.profilePictureUrl());
+        }
+
         if (dto.password() != null && !dto.password().trim().isEmpty()) {
             existing.getUser().setPassword(passwordEncoder.encode(dto.password().trim()));
         }

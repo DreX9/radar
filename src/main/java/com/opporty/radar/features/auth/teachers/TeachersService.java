@@ -60,6 +60,10 @@ public class TeachersService {
         existing.setStatus(dto.status());
         existing.setHiringDate(dto.hiringDate());
 
+        if (existing.getUser() != null) {
+            existing.getUser().setProfilePictureUrl(dto.profilePictureUrl());
+        }
+
         if (dto.password() != null && !dto.password().trim().isEmpty()) {
             existing.getUser().setPassword(passwordEncoder.encode(dto.password().trim()));
         }

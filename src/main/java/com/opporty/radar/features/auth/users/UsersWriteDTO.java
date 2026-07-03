@@ -11,5 +11,6 @@ public record UsersWriteDTO(
         @NotBlank @Email String email,
         @NotBlank String password,
         boolean enabled,
-        @NotNull Long roleId
+        @NotNull Long roleId,
+        String profilePictureUrl
 ) {}

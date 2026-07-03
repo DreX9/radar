@@ -143,6 +143,7 @@ public class AuthenticationService {
                 claims.put("lastName", "");
             }
         }
+        claims.put("profilePictureUrl", user.getProfilePictureUrl());
         return jwtService.generateToken(claims, userDetails);
     }
 
@@ -169,6 +170,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(true)
                 .role(role)
+                .profilePictureUrl(request.profilePictureUrl())
                 .build();
         usersRepository.save(user);
 
@@ -210,6 +212,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .enabled("ACTIVE".equalsIgnoreCase(request.status()))
                 .role(role)
+                .profilePictureUrl(request.profilePictureUrl())
                 .build();
         usersRepository.save(user);
 
