@@ -29,7 +29,7 @@ public class RadarApplication {
 	/**
 	 * Seed inicial: crea el rol ADMIN y el usuario administrador si no existen.
 	 * Credenciales por defecto:
-	 * username : admin
+	 * username : c2026000001
 	 * password : Admin1234!
 	 */
 	@Bean
@@ -85,31 +85,39 @@ public class RadarApplication {
 										.description("Profesor / Docente")
 										.build()));
 
-				// 3. Crear usuario admin y asociarlo a un perfil de profesor si no existe
-				if (usersRepository.findByUsername("mr01019000").isEmpty()) {
-					Users adminUser = Users.builder()
-							.username("mr01019000")
-							.email("admin@radar.com")
-							.password(passwordEncoder.encode("Admin1234!"))
-							.enabled(true)
-							.role(adminRole)
-							.build();
-					usersRepository.save(adminUser);
+				// 3. Crear usuario admin y asociarlo a un perfil de profesor si no existe o migrarlo
+				var adminOpt = usersRepository.findByUsername("c2026000001");
+				if (adminOpt.isEmpty()) {
+					var oldAdminOpt = usersRepository.findByUsername("mr01019000");
+					if (oldAdminOpt.isPresent()) {
+						Users oldAdmin = oldAdminOpt.get();
+						oldAdmin.setUsername("c2026000001");
+						usersRepository.save(oldAdmin);
+					} else if (!usersRepository.existsByEmail("admin@radar.com")) {
+						Users adminUser = Users.builder()
+								.username("c2026000001")
+								.email("admin@radar.com")
+								.password(passwordEncoder.encode("Admin1234!"))
+								.enabled(true)
+								.role(adminRole)
+								.build();
+						usersRepository.save(adminUser);
 
-					Teachers adminTeacher = Teachers.builder()
-							.nombres("Administrador")
-							.apellidos("del Sistema")
-							.titulo("Magíster / Director")
-							.especialidad("Administración Educativa")
-							.telefono("999999999")
-							.dni("00000000")
-							.fechaNacimiento(java.time.LocalDate.of(1990, 1, 1))
-							.biography("Administrador principal del sistema Echo.")
-							.status("ACTIVE")
-							.hiringDate(java.time.LocalDate.of(2020, 1, 1))
-							.user(adminUser)
-							.build();
-					teachersRepository.save(adminTeacher);
+						Teachers adminTeacher = Teachers.builder()
+								.nombres("Administrador")
+								.apellidos("del Sistema")
+								.titulo("Magíster / Director")
+								.especialidad("Administración Educativa")
+								.telefono("999999999")
+								.dni("00000000")
+								.fechaNacimiento(java.time.LocalDate.of(1990, 1, 1))
+								.biography("Administrador principal del sistema Echo.")
+								.status("ACTIVE")
+								.hiringDate(java.time.LocalDate.of(2020, 1, 1))
+								.user(adminUser)
+								.build();
+						teachersRepository.save(adminTeacher);
+					}
 				}
 
 				// 5. Crear categorías y sus tags asociados si no existen en la BD
