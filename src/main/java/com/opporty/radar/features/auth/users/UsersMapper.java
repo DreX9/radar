@@ -76,7 +76,8 @@ public class UsersMapper implements MapperInterface<Users, UsersWriteDTO, UsersV
                 phoneNumber,
                 biography,
                 hiringDate,
-                titulo
+                titulo,
+                entity.getProfilePictureUrl()
         );
     }
 
@@ -90,6 +91,7 @@ public class UsersMapper implements MapperInterface<Users, UsersWriteDTO, UsersV
                 .password(dto.password())
                 .enabled(dto.enabled())
                 .role(Roles.builder().id(dto.roleId()).build())
+                .profilePictureUrl(dto.profilePictureUrl())
                 .build();
     }
 }

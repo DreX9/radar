@@ -53,4 +53,7 @@ public class Users {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<EventCategories> interests = new HashSet<>();
+
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
 }

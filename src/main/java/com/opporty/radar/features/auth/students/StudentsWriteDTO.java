@@ -18,7 +18,8 @@ public record StudentsWriteDTO(
         @Pattern(regexp = "\\d{9}", message = "El número de teléfono debe tener exactamente 9 dígitos") String phoneNumber,
         @NotBlank String status,
         @NotNull Long userId,
-        String password
+        String password,
+        String profilePictureUrl
 ) {}
 
 

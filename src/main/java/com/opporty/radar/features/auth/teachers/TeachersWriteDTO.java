@@ -19,7 +19,8 @@ public record TeachersWriteDTO(
         @NotBlank String status,
         LocalDate hiringDate,
         @NotNull Long userId,
-        String password
+        String password,
+        String profilePictureUrl
 ) {}
 
 

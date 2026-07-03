@@ -143,6 +143,7 @@ public class AuthenticationService {
                 claims.put("lastName", "");
             }
         }
+        claims.put("profilePictureUrl", user.getProfilePictureUrl());
         return jwtService.generateToken(claims, userDetails);
     }
 
@@ -157,8 +158,8 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DNI ya está registrado");
         }
 
-        // Auto-generación del nombre de usuario
-        String username = generateUniqueUsername("std", request.dni(), request.fechaNacimiento());
+        // Auto-generacion del nombre de usuario
+        String username = generateUniqueUsername("u", request.dni());
 
         var role = rolesRepository.findByName("STUDENT")
                 .orElseThrow(() -> new RuntimeException("Rol STUDENT no encontrado"));
@@ -169,6 +170,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .enabled(true)
                 .role(role)
+                .profilePictureUrl(request.profilePictureUrl())
                 .build();
         usersRepository.save(user);
 
@@ -198,8 +200,8 @@ public class AuthenticationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DNI ya está registrado");
         }
 
-        // Auto-generación del nombre de usuario
-        String username = generateUniqueUsername("mr", request.dni(), request.birthDate());
+        // Auto-generacion del nombre de usuario
+        String username = generateUniqueUsername("c", request.dni());
 
         var role = rolesRepository.findById(request.roleId())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con ID: " + request.roleId()));
@@ -210,6 +212,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .enabled("ACTIVE".equalsIgnoreCase(request.status()))
                 .role(role)
+                .profilePictureUrl(request.profilePictureUrl())
                 .build();
         usersRepository.save(user);
 
@@ -231,11 +234,12 @@ public class AuthenticationService {
         return teachersMapper.toDt(teacher);
     }
 
-    private String generateUniqueUsername(String prefix, String dni, java.time.LocalDate dob) {
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("ddMMyy");
-        String formattedDate = dob.format(formatter);
-        String lastTwoDni = dni.length() >= 2 ? dni.substring(dni.length() - 2) : dni;
-        String baseUsername = prefix + formattedDate + lastTwoDni;
+    private String generateUniqueUsername(String prefix, String dni) {
+        int currentYear = java.time.LocalDate.now().getYear();
+        String lastFourDni = dni.length() >= 4 ? dni.substring(dni.length() - 4) : dni;
+        int suffixVal = currentYear - 2026 + 1;
+        String suffix = suffixVal > 0 ? String.format("%02d", suffixVal) : "01";
+        String baseUsername = prefix + currentYear + lastFourDni + suffix;
 
         String username = baseUsername;
         int counter = 1;
